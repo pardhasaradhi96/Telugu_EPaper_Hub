@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Telugu ePaper Hub</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --card: #22263a;
+    --accent: #f5a623;
+    --text: #e8eaf0;
+    --muted: #7a7f99;
+    --border: #2e3350;
+    --red: #e84040;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; min-height: 100vh; display: flex; flex-direction: column; }
+
+  /* HEADER */
+  header {
+    background: var(--surface);
+    border-bottom: 2px solid var(--accent);
+    padding: 10px 16px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
+    gap: 10px;
+  }
+  .logo { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .logo-icon { font-size: 26px; }
+  .logo-text { font-size: 1.1rem; font-weight: 800; color: var(--accent); }
+  .logo-sub { font-size: 0.6rem; color: var(--muted); }
+
+  /* SEARCH */
+  .search-wrap {
+    flex: 1; max-width: 200px;
+    display: flex; align-items: center;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 20px; padding: 5px 12px; gap: 6px;
+  }
+  .search-wrap input {
+    background: none; border: none; outline: none;
+    color: var(--text); font-size: 0.82rem; width: 100%;
+  }
+  .search-wrap input::placeholder { color: var(--muted); }
+  .search-icon { color: var(--muted); font-size: 14px; flex-shrink: 0; }
+
+  /* TOGGLE */
+  .toggle-wrap { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .toggle-label { font-size: 0.68rem; color: var(--muted); }
+  .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .slider { position: absolute; cursor: pointer; inset: 0; background: #333; border-radius: 24px; transition: 0.3s; }
+  .slider:before { content: ""; position: absolute; height: 18px; width: 18px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s; }
+  input:checked + .slider { background: var(--accent); }
+  input:checked + .slider:before { transform: translateX(20px); }
+
+  /* SECTION TABS */
+  .sections-bar { background: var(--surface); display: flex; border-bottom: 1px solid var(--border); }
+  .section-tab { padding: 11px 20px; cursor: pointer; font-size: 0.84rem; font-weight: 600; color: var(--muted); border-bottom: 3px solid transparent; white-space: nowrap; transition: 0.2s; flex: 1; text-align: center; }
+  .section-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* SUB TABS (only in All) */
+  .subsection-bar { background: var(--bg); display: flex; gap: 8px; padding: 10px 16px; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--border); }
+  .subsection-bar::-webkit-scrollbar { display: none; }
+  .sub-tab { padding: 6px 14px; border-radius: 20px; cursor: pointer; font-size: 0.76rem; font-weight: 600; color: var(--muted); background: var(--surface); border: 1px solid var(--border); white-space: nowrap; transition: 0.2s; }
+  .sub-tab.active { background: var(--accent); color: #000; border-color: var(--accent); }
+
+  /* CONTENT */
+  main { flex: 1; padding: 14px; }
+
+  /* SEARCH RESULTS BANNER */
+  .search-banner { 
+    background: var(--surface); border: 1px solid var(--accent); 
+    border-radius: 10px; padding: 10px 14px; margin-bottom: 14px;
+    font-size: 0.82rem; color: var(--accent); display: none;
+    align-items: center; justify-content: space-between;
+  }
+  .search-banner.visible { display: flex; }
+  .search-clear { cursor: pointer; color: var(--muted); font-size: 1.1rem; font-weight: bold; }
+  .search-clear:hover { color: var(--text); }
+
+  /* GRID */
+  .papers-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; padding-top: 4px; }
+
+  /* CARD */
+  .paper-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; display: flex; flex-direction: column; }
+  .paper-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+  .paper-card:active { transform: scale(0.97); }
+
+  /* IMAGE AREA — white background for logo clarity */
+  .card-img-wrap {
+    width: 100%; background: #ffffff;
+    display: flex; align-items: center; justify-content: center;
+    min-height: 80px; overflow: hidden; position: relative;
+  }
+  .card-img-wrap img { width: 100%; height: auto; display: block; object-fit: contain; }
+  .card-img-wrap .no-img {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; height: 80px; gap: 4px;
+    background: #f0f0f0; width: 100%;
+  }
+  .card-img-wrap .no-img span:first-child { font-size: 22px; }
+  .card-img-wrap .no-img span:last-child { font-size: 0.6rem; color: #999; }
+
+  .card-body { padding: 7px 8px 6px; display: flex; align-items: center; justify-content: space-between; gap: 4px; }
+  .card-info { flex: 1; overflow: hidden; }
+  .card-name { font-size: 0.7rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .card-id { font-size: 0.58rem; color: var(--accent); font-weight: 700; }
+
+  .fav-btn { background: none; border: none; cursor: pointer; font-size: 17px; line-height: 1; padding: 2px 0; transition: transform 0.2s; flex-shrink: 0; }
+  .fav-btn:hover { transform: scale(1.3); }
+
+  /* CATEGORY BADGE in favorites */
+  .cat-badge { font-size: 0.55rem; color: var(--muted); background: var(--surface); border-radius: 4px; padding: 1px 4px; margin-top: 2px; display: inline-block; }
+
+  /* EMPTY STATE */
+  .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; color: var(--muted); gap: 12px; }
+  .empty-state .big-icon { font-size: 46px; }
+  .empty-state p { font-size: 0.88rem; text-align: center; }
+
+  /* LOADING */
+  .loading { display: flex; align-items: center; justify-content: center; padding: 40px; gap: 10px; color: var(--muted); font-size: 0.88rem; }
+
+  /* UNFAV DIALOG */
+  .dialog-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 999; align-items: center; justify-content: center; }
+  .dialog-overlay.show { display: flex; }
+  .dialog-box { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; max-width: 290px; width: 90%; text-align: center; }
+  .dialog-box h3 { font-size: 1rem; margin-bottom: 8px; }
+  .dialog-box p { font-size: 0.8rem; color: var(--muted); margin-bottom: 20px; line-height: 1.5; }
+  .dialog-btns { display: flex; gap: 10px; justify-content: center; }
+  .dialog-btns button { padding: 8px 22px; border-radius: 8px; border: none; font-weight: 600; font-size: 0.83rem; cursor: pointer; }
+  .btn-yes { background: var(--red); color: white; }
+  .btn-no { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+
+  /* FOOTER */
+  footer { background: var(--surface); border-top: 1px solid var(--border); padding: 7px 16px; text-align: center; font-size: 0.65rem; color: var(--muted); }
+  footer span { color: var(--accent); }
+
+  @media (max-width: 420px) {
+    .papers-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 9px; }
+    .search-wrap { max-width: 130px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">📰</div>
+    <div>
+      <div class="logo-text">ePaper Hub</div>
+      <div class="logo-sub">Telugu &amp; English</div>
+    </div>
+  </div>
+
+  <div class="search-wrap">
+    <span class="search-icon">🔢</span>
+    <input type="number" id="searchInput" placeholder="Search by #ID..." min="100" max="999">
+  </div>
+
+  <div class="toggle-wrap">
+    <span class="toggle-label">🌐</span>
+    <label class="switch">
+      <input type="checkbox" id="appToggle">
+      <span class="slider"></span>
+    </label>
+    <span class="toggle-label">📱</span>
+  </div>
+</header>
+
+<div class="sections-bar">
+  <div class="section-tab active" data-section="all">All Papers</div>
+  <div class="section-tab" data-section="favorites">❤️ Favorites</div>
+</div>
+
+<!-- Sub tabs — only shown in All section -->
+<div class="subsection-bar" id="subBar">
+  <div class="sub-tab active" data-sub="apts">AP + TS</div>
+  <div class="sub-tab" data-sub="ts">Telangana</div>
+  <div class="sub-tab" data-sub="ap">Andhra Pradesh</div>
+  <div class="sub-tab" data-sub="english">English</div>
+</div>
+
+<main>
+  <div class="search-banner" id="searchBanner">
+    <span id="searchBannerText"></span>
+    <span class="search-clear" id="searchClear">✕</span>
+  </div>
+
+  <!-- ALL section grids -->
+  <div id="view-all">
+    <div class="papers-grid" id="grid-apts"></div>
+    <div class="papers-grid" id="grid-ts" style="display:none"></div>
+    <div class="papers-grid" id="grid-ap" style="display:none"></div>
+    <div class="papers-grid" id="grid-english" style="display:none"></div>
+  </div>
+
+  <!-- FAVORITES — flat list, no subsections -->
+  <div id="view-favorites" style="display:none">
+    <div class="papers-grid" id="grid-favorites"></div>
+  </div>
+
+  <!-- SEARCH RESULTS -->
+  <div id="view-search" style="display:none">
+    <div class="papers-grid" id="grid-search"></div>
+  </div>
+</main>
+
+<div class="dialog-overlay" id="unfavDialog">
+  <div class="dialog-box">
+    <h3>💔 Remove Favorite?</h3>
+    <p id="unfavName">Remove this paper from favorites?</p>
+    <div class="dialog-btns">
+      <button class="btn-yes" id="unfavYes">Yes, Remove</button>
+      <button class="btn-no" id="unfavNo">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <span>Telugu ePaper Hub</span> &nbsp;|&nbsp; All rights to respective publishers &nbsp;|&nbsp; Updated daily
+</footer>
+
+<script>
+// ===================== DATE UTILS =====================
+const TODAY = new Date();
+const YYYY = TODAY.getFullYear();
+const MM   = String(TODAY.getMonth()+1).padStart(2,'0');
+const DD   = String(TODAY.getDate()).padStart(2,'0');
+const MON3 = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][TODAY.getMonth()];
+
+function resolveUrl(url) {
+  return url
+    .replace(/\{YYYY-MM-DD\}/g, `${YYYY}-${MM}-${DD}`)
+    .replace(/\{DD-Mon-YYYY\}/g, `${DD}-${MON3}-${YYYY}`)
+    .replace(/\{DD\/MM\/YYYY\}/g, `${DD}/${MM}/${YYYY}`)
+    .replace(/\{MM\/DD\/YYYY\}/g, `${MM}/${DD}/${YYYY}`);
+}
+
+// ===================== CSV PARSER =====================
+function parseCSV(text) {
+  const lines = text.trim().split(/\r?\n/);
+  const headers = lines[0].split(',').map(h => h.trim());
+  return lines.slice(1).map(line => {
+    // handle commas inside URLs — split on first N commas only
+    const cols = line.split(',');
+    // id, name, url (may have commas if params), category, date_dynamic
+    // safe: only 5 columns, url is col index 2, but could have ?a=1&b=2 (no commas)
+    const obj = {};
+    headers.forEach((h, i) => { obj[h] = (cols[i] || '').trim(); });
+    // rebuild url in case it had commas (shouldn't but just in case)
+    if (cols.length > headers.length) {
+      const extra = cols.slice(2, cols.length - 2).join(',');
+      obj['url'] = extra.trim();
+    }
+    return obj;
+  }).filter(r => r.id);
+}
+
+// ===================== IMAGE LOADING =====================
+// Folder names per CSV category value
+const CAT_FOLDER = { 'AP+TS': 'ap+ts', 'TS': 'TS', 'AP': 'ap', 'English': 'english' };
+const IMG_EXTS = ['png','jpg','jpeg','PNG','JPG','JPEG','webp','WEBP'];
+
+function loadImage(name, folder, exts, img, noImgEl) {
+  if (!exts.length) {
+    img.style.display = 'none';
+    noImgEl.style.display = 'flex';
+    return;
+  }
+  img.src = `Images/${folder}/${name}.${exts[0]}`;
+  img.onload = () => { img.style.display = 'block'; noImgEl.style.display = 'none'; };
+  img.onerror = () => loadImage(name, folder, exts.slice(1), img, noImgEl);
+}
+
+// ===================== STATE =====================
+let allPapers = [];   // flat array of all loaded papers
+let favorites = new Set(JSON.parse(localStorage.getItem('epaper_favs') || '[]'));
+let appMode   = localStorage.getItem('epaper_appmode') === 'true';
+let currentSection = 'all';
+let currentSub = 'apts';
+let searchActive = false;
+let pendingUnfavId = null;
+
+// sub → category string in CSV
+const SUB_CAT = { apts: 'AP+TS', ts: 'TS', ap: 'AP', english: 'English' };
+
+// ===================== TOGGLE =====================
+const appToggle = document.getElementById('appToggle');
+appToggle.checked = appMode;
+appToggle.addEventListener('change', () => {
+  appMode = appToggle.checked;
+  localStorage.setItem('epaper_appmode', appMode);
+});
+
+// ===================== LOAD CSVs =====================
+const CSV_FILES = [
+  { file: 'ap_ts.csv' },
+  { file: 'ts.csv' },
+  { file: 'ap.csv' },
+  { file: 'english.csv' },
+];
+
+async function loadAllCSVs() {
+  for (const c of CSV_FILES) {
+    try {
+      const res = await fetch(c.file);
+      if (!res.ok) throw new Error('not found');
+      const text = await res.text();
+      const rows = parseCSV(text);
+      rows.forEach(r => { r.id = parseInt(r.id); allPapers.push(r); });
+    } catch(e) {
+      console.warn('Could not load', c.file, e);
+    }
+  }
+  renderCurrentView();
+}
+
+// ===================== CARD BUILDER =====================
+function makeCard(paper, showCatBadge = false) {
+  const card = document.createElement('div');
+  card.className = 'paper-card';
+  card.dataset.id = paper.id;
+
+  // Image area
+  const imgWrap = document.createElement('div');
+  imgWrap.className = 'card-img-wrap';
+
+  const img = document.createElement('img');
+  img.alt = paper.name;
+  img.style.display = 'none';
+
+  const noImg = document.createElement('div');
+  noImg.className = 'no-img';
+  noImg.innerHTML = `<span>📄</span><span>${paper.name.substring(0,10)}</span>`;
+  noImg.style.display = 'none';
+
+  const folder = CAT_FOLDER[paper.category] || 'ap+ts';
+  loadImage(paper.name, folder, [...IMG_EXTS], img, noImg);
+
+  imgWrap.appendChild(img);
+  imgWrap.appendChild(noImg);
+
+  // Body
+  const body = document.createElement('div');
+  body.className = 'card-body';
+
+  const info = document.createElement('div');
+  info.className = 'card-info';
+
+  const nameEl = document.createElement('div');
+  nameEl.className = 'card-name';
+  nameEl.textContent = paper.name;
+
+  const idEl = document.createElement('div');
+  idEl.className = 'card-id';
+  idEl.textContent = '#' + paper.id;
+
+  info.appendChild(nameEl);
+  info.appendChild(idEl);
+
+  if (showCatBadge) {
+    const badge = document.createElement('span');
+    badge.className = 'cat-badge';
+    badge.textContent = paper.category;
+    info.appendChild(badge);
+  }
+
+  const favBtn = document.createElement('button');
+  favBtn.className = 'fav-btn';
+  favBtn.setAttribute('aria-label', 'Favorite');
+  updateFavBtn(favBtn, favorites.has(paper.id));
+
+  favBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (favorites.has(paper.id)) {
+      // in favorites section: show dialog
+      pendingUnfavId = paper.id;
+      document.getElementById('unfavName').textContent = `Remove "${paper.name}" from favorites?`;
+      document.getElementById('unfavDialog').classList.add('show');
+    } else {
+      favorites.add(paper.id);
+      saveFavs();
+      updateFavBtn(favBtn, true);
+      // if in favorites view, re-render it too
+      if (currentSection === 'favorites') renderFavorites();
+    }
+  });
+
+  body.appendChild(info);
+  body.appendChild(favBtn);
+  card.appendChild(imgWrap);
+  card.appendChild(body);
+
+  // Open link
+  card.addEventListener('click', () => {
+    const url = resolveUrl(paper.url);
+    if (appMode) { window.location.href = url; }
+    else { window.open(url, '_blank'); }
+  });
+
+  return card;
+}
+
+function updateFavBtn(btn, isFav) {
+  btn.textContent = isFav ? '❤️' : '🤍';
+  btn.title = isFav ? 'Remove favorite' : 'Add to favorites';
+}
+
+function saveFavs() {
+  localStorage.setItem('epaper_favs', JSON.stringify([...favorites]));
+}
+
+// ===================== RENDER =====================
+function renderGrid(gridId, papers, showCatBadge = false) {
+  const grid = document.getElementById(gridId);
+  grid.innerHTML = '';
+  if (!papers.length) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="big-icon">😕</div><p>Nothing here yet.</p></div>`;
+    return;
+  }
+  papers.forEach(p => grid.appendChild(makeCard(p, showCatBadge)));
+}
+
+function renderAllSection() {
+  // Only render the active sub tab
+  const cat = SUB_CAT[currentSub];
+  const papers = allPapers.filter(p => p.category === cat);
+  // Show correct grid
+  ['apts','ts','ap','english'].forEach(s => {
+    document.getElementById('grid-' + s).style.display = s === currentSub ? 'grid' : 'none';
+  });
+  renderGrid('grid-' + currentSub, papers, false);
+}
+
+function renderFavorites() {
+  const favPapers = allPapers.filter(p => favorites.has(p.id));
+  if (!favPapers.length) {
+    document.getElementById('grid-favorites').innerHTML = `
+      <div class="empty-state" style="grid-column:1/-1">
+        <div class="big-icon">💔</div>
+        <p>No favorites yet.<br>Tap 🤍 on any paper to add!</p>
+      </div>`;
+    return;
+  }
+  renderGrid('grid-favorites', favPapers, true); // show category badge
+}
+
+function renderSearchResults(query) {
+  const num = parseInt(query);
+  if (isNaN(num)) return;
+  const results = allPapers.filter(p => p.id === num);
+  renderGrid('grid-search', results, true);
+  const banner = document.getElementById('searchBanner');
+  banner.classList.add('visible');
+  document.getElementById('searchBannerText').textContent =
+    results.length ? `Found: ${results[0].name} (#${num})` : `No paper found with ID #${num}`;
+}
+
+function renderCurrentView() {
+  if (searchActive) return; // search overrides
+
+  if (currentSection === 'all') {
+    renderAllSection();
+  } else {
+    renderFavorites();
+  }
+}
+
+function showView(view) {
+  document.getElementById('view-all').style.display      = view === 'all'      ? 'block' : 'none';
+  document.getElementById('view-favorites').style.display = view === 'favorites' ? 'block' : 'none';
+  document.getElementById('view-search').style.display   = view === 'search'   ? 'block' : 'none';
+  document.getElementById('subBar').style.display        = view === 'all'       ? 'flex'  : 'none';
+}
+
+// ===================== SECTION TABS =====================
+document.querySelectorAll('.section-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    if (searchActive) clearSearch();
+    document.querySelectorAll('.section-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    currentSection = tab.dataset.section;
+    showView(currentSection);
+    renderCurrentView();
+  });
+});
+
+// ===================== SUB TABS =====================
+document.querySelectorAll('.sub-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    currentSub = tab.dataset.sub;
+    renderAllSection();
+  });
+});
+
+// ===================== SEARCH =====================
+const searchInput = document.getElementById('searchInput');
+let searchTimer;
+
+searchInput.addEventListener('input', () => {
+  clearTimeout(searchTimer);
+  const val = searchInput.value.trim();
+  if (!val) { clearSearch(); return; }
+  searchTimer = setTimeout(() => {
+    searchActive = true;
+    showView('search');
+    renderSearchResults(val);
+  }, 300);
+});
+
+document.getElementById('searchClear').addEventListener('click', clearSearch);
+
+function clearSearch() {
+  searchActive = false;
+  searchInput.value = '';
+  document.getElementById('searchBanner').classList.remove('visible');
+  showView(currentSection);
+  renderCurrentView();
+}
+
+// ===================== UNFAV DIALOG =====================
+document.getElementById('unfavYes').addEventListener('click', () => {
+  if (pendingUnfavId !== null) {
+    favorites.delete(pendingUnfavId);
+    saveFavs();
+    pendingUnfavId = null;
+    document.getElementById('unfavDialog').classList.remove('show');
+    // re-render to update hearts everywhere
+    renderCurrentView();
+    // also update any visible all-section card hearts
+    document.querySelectorAll('.paper-card').forEach(card => {
+      if (parseInt(card.dataset.id) === pendingUnfavId) {
+        updateFavBtn(card.querySelector('.fav-btn'), false);
+      }
+    });
+    // force re-render all section to refresh hearts
+    renderAllSection();
+    renderFavorites();
+    showView(currentSection);
+  }
+});
+
+document.getElementById('unfavNo').addEventListener('click', () => {
+  pendingUnfavId = null;
+  document.getElementById('unfavDialog').classList.remove('show');
+});
+
+document.getElementById('unfavDialog').addEventListener('click', e => {
+  if (e.target === document.getElementById('unfavDialog')) {
+    pendingUnfavId = null;
+    document.getElementById('unfavDialog').classList.remove('show');
+  }
+});
+
+// ===================== BOOT =====================
+showView('all');
+loadAllCSVs();
+</script>
+</body>
+</html>

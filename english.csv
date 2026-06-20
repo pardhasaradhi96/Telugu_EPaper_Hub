@@ -1,0 +1,10 @@
+id,name,url,category,date_dynamic
+400,dailypioneer,https://dailypioneer.com/,English,no
+401,deccanchronicle,http://epaper.deccanchronicle.com/,English,no
+402,financialexpress,https://epaper.financialexpress.com/,English,no
+403,penpower,https://epaper.penpower.in/paper.php?date={YYYY-MM-DD}&edition=2,English,yes
+404,sundayguardianlive,https://epaper.sundayguardianlive.com/,English,no
+405,telanganatoday,https://epaper.telanganatoday.com/Hyderabad?eid=1&edate={DD/MM/YYYY},English,yes
+406,thehansindia,https://epaper.thehansindia.com/,English,no
+407,thestatesman,https://epaper.thestatesman.com/,English,no
+408,wakeuptelangana,https://epaper.wakeuptelangana.com/,English,no
