@@ -3,7 +3,7 @@
 A lightweight, mobile-friendly web application that aggregates Telugu and English ePaper links into a single searchable interface.
 
 [![Website](https://img.shields.io/badge/Website-Open-green)](https://pardhasaradhi96.github.io/Telugu_EPaper_Hub/)
-[![APK](https://img.shields.io/badge/APK-Download-blue)](https://github.com/pardhasaradhi96/Telugu_EPaper_Hub/blob/main/Telugu%20Epaper%20Hub.apk)
+[![APK](https://img.shields.io/badge/APK-Download-blue)](https://github.com/pardhasaradhi96/Telugu_EPaper_Hub/blob/main/App/Telugu%20Epaper%20Hub.apk)
 
 You can run this project locally:
 1. Clone the repository.
@@ -32,7 +32,7 @@ The application loads newspaper metadata from CSV files and displays newspaper c
 - Logo-based card layout for quick identification.
 
 ### Search
-- Search newspapers using their numeric ID.
+- Search newspapers using their numeric ID or with name.
 - Instant filtered results.
 
 ### Favorites
@@ -41,7 +41,6 @@ The application loads newspaper metadata from CSV files and displays newspaper c
 - Dedicated Favorites section.
 
 ### Responsive UI
-- Mobile-first layout.
 - Dark theme interface.
 - Card-based navigation.
 - Sticky header and easy category switching.
