@@ -157,7 +157,7 @@
 
   <div class="search-wrap">
     <span class="search-icon"></span>
-    <input type="number" id="searchInput" placeholder="Search by #ID..." min="100" max="999">
+    <input type="text" id="searchInput" placeholder="Search by ID or Name...">
   </div>
 
   <div class="toggle-wrap">
@@ -449,14 +449,28 @@ function renderFavorites() {
 }
 
 function renderSearchResults(query) {
+  query = query.trim().toLowerCase();
+
   const num = parseInt(query);
-  if (isNaN(num)) return;
-  const results = allPapers.filter(p => p.id === num);
+
+  const results = allPapers.filter(p => {
+    const idMatch = !isNaN(num) && p.id === num;
+    const nameMatch = p.name.toLowerCase().includes(query);
+    return idMatch || nameMatch;
+  });
+
   renderGrid('grid-search', results, true);
+
   const banner = document.getElementById('searchBanner');
   banner.classList.add('visible');
-  document.getElementById('searchBannerText').textContent =
-    results.length ? `Found: ${results[0].name} (#${num})` : `No paper found with ID #${num}`;
+
+  if (results.length) {
+    document.getElementById('searchBannerText').textContent =
+      `Found ${results.length} paper(s)`;
+  } else {
+    document.getElementById('searchBannerText').textContent =
+      `No paper found for "${query}"`;
+  }
 }
 
 function renderCurrentView() {
